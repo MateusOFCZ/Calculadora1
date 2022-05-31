@@ -10,10 +10,10 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  build-dev:
     runs-on: ubuntu-latest
-
+    environment:
+      name: dev
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 11
@@ -23,4 +23,44 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B compile --file pom.xml
+      
+  build-hmg:
+    runs-on: ubuntu-latest
+    environment:
+      name: hmg
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B test --file pom.xml
+      
+  build-prd:
+    runs-on: ubuntu-latest
+    environment:
+      name: prd
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml -DskipTests
+    - name: Download artefact
+      run: mkdir staging
+    - name: Copy artefacts for post to temp folder
+      run: cp target/*jar-with-dependencies.jar staging
+    - name: Use Upload Artifact from GitHub Action
+      uses: actions/upload-artifact@v2
+      with:
+        name: Package
+        path: staging
+
