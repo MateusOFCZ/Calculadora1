@@ -15,69 +15,68 @@ jobs:
     environment:
       name: dev
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B compile --file pom.xml
-      
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: mvn -B compile --file pom.xml
+
   build-hmg:
     runs-on: ubuntu-latest
     environment:
       name: hmg
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B test --file pom.xml
-    - name: Cache SonarCloud packages
-      uses: actions/cache@v1
-      with:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: mvn -B test --file pom.xml
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v1
+        with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-    - name: Cache Maven packages
-      uses: actions/cache@v1
-      with:
+      - name: Cache Maven packages
+        uses: actions/cache@v1
+        with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-    - name: Build and analyze
-      env:
+      - name: Build and analyze
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml -Dsonar.projectKey=MateusOFCZ_Calculadora1
-      
+        run: mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml -Dsonar.projectKey=MateusOFCZ_Calculadora1
+
   build-prd:
     runs-on: ubuntu-latest
     environment:
       name: prd
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml -DskipTests
-    - name: Download artefact
-      run: mkdir staging
-    - name: Copy artefacts for post to temp folder
-      run: cp target/*jar-with-dependencies.jar staging
-    - name: Use Upload Artifact from GitHub Action
-      uses: actions/upload-artifact@v2
-      with:
-        name: Package
-        path: staging
-
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml -DskipTests
+      - name: Download artefact
+        run: mkdir staging
+      - name: Copy artefacts for post to temp folder
+        run: cp target/*jar-with-dependencies.jar staging
+      - name: Use Upload Artifact from GitHub Action
+        uses: actions/upload-artifact@v2
+        with:
+          name: Package
+          path: staging
